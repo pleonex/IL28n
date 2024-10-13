@@ -13,19 +13,14 @@ public sealed class BuildLifetime : FrostingLifetime<PleOpsBuildContext>
 {
     public override void Setup(PleOpsBuildContext context, ISetupContext info)
     {
-        // HERE you can set default values overridable by command-line
-        // TODO EXAMPLE: context.WarningsAsErrors = false;
         context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
-            "./src/MyConsole", new[] { "win-x64", "linux-x64", "osx-x64" }, "net8.0"));
+            "./src/ResxConverter", [ "win-x64", "linux-x64", "osx-x64" ], "net8.0"));
 
-        // Update build parameters from command line arguments.
         context.ReadArguments();
 
-        // HERE you can force values non-overridable.
-        context.DotNetContext.PreviewNuGetFeed = "https://pkgs.dev.azure.com/benito356/NetDevOpsTest/_packaging/Example-Preview/nuget/v3/index.json";
-        context.DotNetContext.StableNuGetFeed = "https://pkgs.dev.azure.com/benito356/NetDevOpsTest/_packaging/Example-Preview/nuget/v3/index.json";
+        // Preview to custom Azure DevOps feed. Stable to nuget.org (default)
+        context.DotNetContext.PreviewNuGetFeed = "https://pkgs.dev.azure.com/pleonex/Pleosoft/_packaging/Pleosoft-Preview/nuget/v3/index.json";
 
-        // Print the build info to use.
         context.Print();
     }
 
@@ -48,7 +43,6 @@ public sealed class DefaultTask : FrostingTask
 [IsDependentOn(typeof(Cake.Frosting.PleOps.Recipe.Common.SetGitVersionTask))]
 [IsDependentOn(typeof(Cake.Frosting.PleOps.Recipe.GitHub.ExportReleaseNotesTask))]
 [IsDependentOn(typeof(Cake.Frosting.PleOps.Recipe.Dotnet.DotnetTasks.BundleProjectTask))]
-[IsDependentOn(typeof(Cake.Frosting.PleOps.Recipe.DocFx.BuildTask))]
 public sealed class BundleTask : FrostingTask
 {
 }
