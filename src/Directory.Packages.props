@@ -1,6 +1,8 @@
 <Project>
-    <!-- Centralize dependency management -->
-    <ItemGroup>
-        <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.12.0.78982" />
-    </ItemGroup>
+  <!-- Centralize dependency management -->
+  <ItemGroup>
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.32.0.97167" />
+    <PackageVersion Include="Yarhl" Version="4.0.0" />
+    <PackageVersion Include="Yarhl.Media.Text" Version="4.0.0" />
+  </ItemGroup>
 </Project>
