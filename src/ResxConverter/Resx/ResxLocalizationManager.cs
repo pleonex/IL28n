@@ -6,15 +6,15 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.Versioning;
 
-public class ResxLocalizationManager
+public static class ResxLocalizationManager
 {
-    public LocalizedResxCatalog ReadResxFile(string resxPath)
+    public static LocalizedResxCatalog ReadResxFile(string resxPath)
     {
         throw new NotImplementedException();
     }
 
     [SupportedOSPlatform("windows")]
-    public LocalizedResxCatalog ReadBinaryResource(string binaryResourcePath)
+    public static LocalizedResxCatalog ReadBinaryResource(string binaryResourcePath)
     {
         using var reader = new ResourceReader(binaryResourcePath);
         IDictionaryEnumerator dict = reader.GetEnumerator();
@@ -33,7 +33,7 @@ public class ResxLocalizationManager
         return catalog;
     }
 
-    public LocalizedResxCatalog ReadEmbeddedResource(Assembly resourceAssembly, string resourceName, CultureInfo culture)
+    public static LocalizedResxCatalog ReadEmbeddedResource(Assembly resourceAssembly, string resourceName, CultureInfo culture)
     {
         var catalog = new LocalizedResxCatalog {
             Name = resourceName,
