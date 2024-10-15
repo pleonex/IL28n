@@ -26,10 +26,14 @@ public class Resx2Po : IConverter<LocalizedResxCatalog, Po>
         var po = new Po(header);
 
         foreach (LocalizedResxMessage sourceEntry in sourceCatalog.Messages) {
+            if (string.IsNullOrEmpty(sourceEntry.Value)) {
+                continue;
+            }
+
             LocalizedResxMessage? targetEntry = targetCatalog.Messages
                 .FirstOrDefault(m => m.Id == sourceEntry.Id);
 
-            var poEntry = new PoEntry(sourceEntry.Value!) {
+            var poEntry = new PoEntry(sourceEntry.Value) {
                 Context = sourceEntry.Id,
                 Translated = targetEntry?.Value ?? string.Empty,
                 ExtractedComments = sourceEntry.Comment ?? "",
