@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Internalization format for. NET software: .resx</Description>
+    <IsPackable>true</IsPackable>
+
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PleOps.Il28n.Formats.Resx</RootNamespace>
+
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- TODO -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Yarhl" />
+    <PackageReference Include="Yarhl.Media.Text" />
+  </ItemGroup>
+
+</Project>

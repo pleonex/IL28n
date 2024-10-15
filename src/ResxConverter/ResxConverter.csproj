@@ -1,10 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>PleOps.Il28n.ResxConverter</RootNamespace>
 
     <TargetFramework>net8.0</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>resxconverter</ToolCommandName>
 
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -18,12 +20,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Spectre.Console.Cli" />
-    <PackageReference Include="Yarhl" />
-    <PackageReference Include="Yarhl.Media.Text" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExampleResources\ExampleResources.csproj" />
+    <ProjectReference Include="..\Il28n.Formats.Resx\Il28n.Formats.Resx.csproj" />
   </ItemGroup>
 
 </Project>

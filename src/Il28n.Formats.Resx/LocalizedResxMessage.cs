@@ -1,4 +1,4 @@
-﻿namespace PleOps.Il28n.ResxConverter.Resx;
+﻿namespace PleOps.Il28n.Formats.Resx;
 
 public class LocalizedResxMessage
 {

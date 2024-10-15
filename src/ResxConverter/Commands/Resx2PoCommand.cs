@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 using System.Threading.Tasks;
-using PleOps.Il28n.ResxConverter.Resx;
+using PleOps.Il28n.Formats.Resx;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Yarhl.IO;

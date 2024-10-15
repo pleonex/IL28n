@@ -1,4 +1,4 @@
-﻿namespace PleOps.Il28n.ResxConverter.Resx;
+﻿namespace PleOps.Il28n.Formats.Resx;
 
 using Yarhl.FileFormat;
 using Yarhl.Media.Text;
