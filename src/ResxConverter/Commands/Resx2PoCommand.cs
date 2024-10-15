@@ -8,7 +8,7 @@ using Spectre.Console.Cli;
 using Yarhl.IO;
 using Yarhl.Media.Text;
 
-[Description("Convert a RESX file into PO format")]
+[Description("Convert monolingual RESX files into PO format")]
 internal class Resx2PoCommand : AsyncCommand<Resx2PoCommand.Settings>
 {
     public sealed class Settings : CommandSettings
@@ -17,9 +17,9 @@ internal class Resx2PoCommand : AsyncCommand<Resx2PoCommand.Settings>
         [Description("Path to the default culture .resx file")]
         public required string BaseResxPath { get; set; }
 
-        [CommandArgument(1, "[LANGUAGE]")]
-        [Description("Language code for the target culture")]
-        public required string LanguageCode { get; set; }
+        [CommandArgument(1, "[RESX_LANGUAGE]")]
+        [Description("Language code for the target culture in the .resx file")]
+        public required string ResxLanguage { get; set; }
 
         [CommandArgument(2, "[OUTPUT_PO_PATH]")]
         [Description("Path to the output PO file")]
@@ -32,6 +32,10 @@ internal class Resx2PoCommand : AsyncCommand<Resx2PoCommand.Settings>
         [CommandOption("-r|--reporter")]
         [Description("Email or address to contact to report issues in the translation files")]
         public required string Reporter { get; set; }
+
+        [CommandOption("-l|--language")]
+        [Description("Overwrite the .resx language code for the PO (e.g., specify culture variants)")]
+        public string? PoLanguage { get; set; }
 
         public override ValidationResult Validate()
         {
@@ -47,7 +51,7 @@ internal class Resx2PoCommand : AsyncCommand<Resx2PoCommand.Settings>
     {
         string resxDir = Path.GetDirectoryName(settings.BaseResxPath)!;
         string resxName = Path.GetFileNameWithoutExtension(settings.BaseResxPath);
-        string targetResxPath = Path.Combine(resxDir, $"{resxName}.{settings.LanguageCode}.resx");
+        string targetResxPath = Path.Combine(resxDir, $"{resxName}.{settings.ResxLanguage}.resx");
         if (!File.Exists(targetResxPath)) {
             AnsiConsole.MarkupLineInterpolated($"[red]Cannot find target RESX file[/]: {targetResxPath}");
             return Task.FromResult(1);
@@ -59,11 +63,15 @@ internal class Resx2PoCommand : AsyncCommand<Resx2PoCommand.Settings>
         AnsiConsole.MarkupLineInterpolated($"Reading RESX localized file: [blue]{targetResxPath}[/]");
         LocalizedResxCatalog translationResx = ResxLocalizationManager.ReadResxFile(targetResxPath);
 
+        if (!string.IsNullOrWhiteSpace(settings.PoLanguage)) {
+            translationResx.Language = settings.PoLanguage;
+        }
+
         AnsiConsole.MarkupLineInterpolated($"Converting into PO format");
         var converter = new Resx2Po(settings.ProjectId, settings.Reporter, baseResx);
         Po po = converter.Convert(translationResx);
 
-        AnsiConsole.MarkupLineInterpolated($"Writing PO in [blue]{settings.OutputPoPath}[/]");
+        AnsiConsole.MarkupLineInterpolated($"Generating PO in [blue]{settings.OutputPoPath}[/]");
         using BinaryFormat binaryPo = new Po2Binary().Convert(po);
         binaryPo.Stream.WriteTo(settings.OutputPoPath);
 

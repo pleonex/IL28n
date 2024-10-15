@@ -92,7 +92,7 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
         public required string AffectedText { get; set; }
 
         [Index(4)]
-        [Name("Issue")]
+        [Name("Issue message")]
         public required string IssueMessage { get; set; }
 
         [Index(5)]
