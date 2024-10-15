@@ -15,7 +15,9 @@ public class LanguageToolPoLinter
         this.client = client;
     }
 
-    public async IAsyncEnumerable<(PoEntry, ReadOnlyCollection<CheckPostResponse_matches>)> LintAsync(Po po, IProgress<PoEntry> progress)
+    public async IAsyncEnumerable<(PoEntry, ReadOnlyCollection<CheckPostResponse_matches>)> LintAsync(
+        Po po,
+        IProgress<PoEntry> progress)
     {
         string language = po.Header.Language;
         foreach (PoEntry entry in po.Entries) {

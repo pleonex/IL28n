@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration.Attributes;
 using PleOps.LanguageTool.Client.Check;
-using Yarhl.Media.Text;
 
 public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
 {
@@ -29,9 +28,9 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
 
     public bool IsDisposed { get; private set; }
 
-    public void AddIssues(PoEntry entry, ReadOnlyCollection<CheckPostResponse_matches> issues)
+    public void ReportIssues(string componentName, string messageId, ReadOnlyCollection<CheckPostResponse_matches> issues)
     {
-        var entries = issues.Select(i => MapToCsvEntry(entry, i));
+        var entries = issues.Select(i => MapToCsvEntry(componentName, messageId, i));
         writer.WriteRecords(entries);
         writer.Flush();
     }
@@ -62,13 +61,13 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
         IsDisposed = true;
     }
 
-    private static CsvEntry MapToCsvEntry(PoEntry entry, CheckPostResponse_matches issue)
+    private static CsvEntry MapToCsvEntry(string componentName, string messageId, CheckPostResponse_matches issue)
     {
         return new CsvEntry {
-            ComponentName = "",
-            Id = entry.Context,
-            Translation = entry.Translated.ReplaceLineEndings(" "),
-            AffectedText = entry.Translated.Substring(issue.Offset!.Value, issue.Length!.Value).ReplaceLineEndings(" "),
+            ComponentName = componentName,
+            Id = messageId,
+            Translation = issue.Sentence!.ReplaceLineEndings(" "),
+            AffectedText = issue.Sentence!.Substring(issue.Offset!.Value, issue.Length!.Value).ReplaceLineEndings(" "),
             IssueMessage = issue.Message!,
             Suggestions = string.Join(", ", issue.Replacements!.Select(r => r.Value)),
         };
@@ -77,7 +76,7 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
     public sealed class CsvEntry
     {
         [Index(0)]
-        [Name("Component name")]
+        [Name("Component")]
         public required string ComponentName { get; set; }
 
         [Index(1)]
@@ -89,7 +88,7 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
         public required string Translation { get; set; }
 
         [Index(3)]
-        [Name("Affected text")]
+        [Name("Translation issue")]
         public required string AffectedText { get; set; }
 
         [Index(4)]

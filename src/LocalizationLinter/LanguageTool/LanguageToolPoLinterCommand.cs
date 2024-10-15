@@ -13,11 +13,19 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
 {
     public sealed class Settings : CommandSettings
     {
-        [CommandArgument(0, "[INPUT-PO]")]
-        [Description("Path to the PO file to check for spell and grammar")]
-        public required string InputPoPath { get; set; }
+        [CommandOption("-f|--file")]
+        [Description("Path to a single PO file to check for spell and grammar")]
+        public string? InputFilePath { get; set; }
 
-        [CommandArgument(1, "[OUTPUT-CSV]")]
+        [CommandOption("-d|--directory")]
+        [Description("Path to a directory containing PO files to check for spell and grammar")]
+        public string? InputDirectoryPath { get; set; }
+
+        [CommandOption("-r|--recursive")]
+        [Description("Search PO files in the directory subfolders")]
+        public bool RecursiveDirectorySearch { get; set; }
+
+        [CommandOption("-o|--output")]
         [Description("Output CSV file with reported issues")]
         public required string CsvOutputPath { get; set; }
 
@@ -29,6 +37,35 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         [CommandOption("--dict")]
         [Description("Path to the file with words to ignore in checks")]
         public string? UserDictionaryPath { get; set; }
+
+        public override ValidationResult Validate()
+        {
+            if (string.IsNullOrWhiteSpace(InputFilePath) && string.IsNullOrWhiteSpace(InputDirectoryPath)) {
+                return ValidationResult.Error("Either an input file or directory must be specified");
+            }
+
+            if (!string.IsNullOrWhiteSpace(InputFilePath) && !string.IsNullOrWhiteSpace(InputDirectoryPath)) {
+                return ValidationResult.Error("An input file and directory cannot be specified at the same time.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(InputFilePath) && !File.Exists(InputFilePath)) {
+                return ValidationResult.Error("The input file does not exist");
+            }
+
+            if (!string.IsNullOrWhiteSpace(InputDirectoryPath) && !Directory.Exists(InputDirectoryPath)) {
+                return ValidationResult.Error("The input directory does not exist");
+            }
+
+            if (RecursiveDirectorySearch && string.IsNullOrWhiteSpace(InputDirectoryPath)) {
+                return ValidationResult.Error("Recursive flag is only valid when passing a directory input");
+            }
+
+            if (string.IsNullOrWhiteSpace(CsvOutputPath)) {
+                return ValidationResult.Error("The output CSV path must be specified");
+            }
+
+            return base.Validate();
+        }
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -41,40 +78,58 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
             languageToolClient.AddUserDictionary(settings.UserDictionaryPath);
         }
 
-        AnsiConsole.MarkupLineInterpolated($"Loading input PO: [blue]{settings.InputPoPath}[/]");
-        Po po;
-        using (var inputStream = new BinaryFormat(settings.InputPoPath, FileOpenMode.Read)) {
-            po = new Binary2Po().Convert(inputStream);
-        }
-        AnsiConsole.MarkupLineInterpolated($"PO with [bold blue]{po.Entries.Count}[/] messages");
+        AnsiConsole.MarkupLineInterpolated($"Output CSV file: [blue]{settings.CsvOutputPath}[/]");
+        var reporter = new LanguageToolCsvIssueSerializer(settings.CsvOutputPath);
 
-        AnsiConsole.MarkupLineInterpolated($"Writing issues into CSV: [blue]{settings.CsvOutputPath}[/]");
-        var csvReporter = new LanguageToolCsvIssueSerializer(settings.CsvOutputPath);
-
-        AnsiConsole.MarkupLine("[bold]Starting linting...[/]");
         var linter = new LanguageToolPoLinter(languageToolClient);
 
-        int issueCount = 0;
+        int issuesCount = 0;
+        if (!string.IsNullOrWhiteSpace(settings.InputFilePath)) {
+            issuesCount = await LintPo(linter, reporter, settings.InputFilePath);
+        } else if (!string.IsNullOrWhiteSpace(settings.InputDirectoryPath)) {
+            IEnumerable<string> inputFiles = Directory.EnumerateFiles(
+                settings.InputDirectoryPath,
+                "*.po",
+                settings.RecursiveDirectorySearch ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+
+            foreach (string inputFile in inputFiles) {
+                issuesCount += await LintPo(linter, reporter, inputFile);
+            }
+        }
+
+        AnsiConsole.MarkupLineInterpolated($"[green]Done![/] Found: [red]{issuesCount}[/] issues");
+        return 0;
+    }
+
+    private static async Task<int> LintPo(LanguageToolPoLinter linter, LanguageToolCsvIssueSerializer reporter, string poPath)
+    {
+        string name = Path.GetFileNameWithoutExtension(poPath);
+
+        Po po;
+        using (var inputStream = new BinaryFormat(poPath, FileOpenMode.Read)) {
+            po = new Binary2Po().Convert(inputStream);
+        }
+
+        AnsiConsole.Write(new Rule($"[blue]{name}[/]: {po.Entries.Count}"));
+
+        int issuesCount = 0;
         var progress = new Progress<PoEntry>(
             e => AnsiConsole.MarkupLineInterpolated($"[[{e.Context}]] '[italic]{e.Translated}[/]'"));
-        await foreach (var results in linter.LintAsync(po, progress)) {
-            PoEntry entry = results.Item1;
-            var matches = results.Item2;
 
-            csvReporter.AddIssues(entry, matches);
+        await foreach (var results in linter.LintAsync(po, progress)) {
+            reporter.ReportIssues(name, results.Item1.Context, results.Item2);
 
             var tree = new Tree("");
-            foreach (var match in matches) {
-                string bad = entry.Translated.Substring(match.Offset!.Value, match.Length!.Value);
+            foreach (var match in results.Item2) {
+                string bad = match.Sentence!.Substring(match.Offset!.Value, match.Length!.Value);
                 string suggestions = string.Join(", ", match.Replacements!.Select(r => r.Value));
                 tree.AddNode($"[red]{match.Message}[/]: [red]{bad}[/] -> [blue]{suggestions}[/]");
-                issueCount++;
+                issuesCount++;
             }
 
             AnsiConsole.Write(tree);
         }
 
-        AnsiConsole.MarkupLineInterpolated($"[green]Done![/] Found: [red]{issueCount}[/] issues");
-        return 0;
+        return issuesCount;
     }
 }
