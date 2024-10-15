@@ -32,6 +32,8 @@ public class Resx2Po : IConverter<LocalizedResxCatalog, Po>
             var poEntry = new PoEntry(sourceEntry.Value!) {
                 Context = sourceEntry.Id,
                 Translated = targetEntry?.Value ?? string.Empty,
+                ExtractedComments = sourceEntry.Comment ?? "",
+                TranslatorComment = targetEntry?.Comment ?? "",
             };
             po.Add(poEntry);
         }
