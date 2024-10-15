@@ -25,6 +25,7 @@ public class Resx2Pot : IConverter<LocalizedResxCatalog, Po>
         foreach (LocalizedResxMessage sourceEntry in source.Messages) {
             var poEntry = new PoEntry(sourceEntry.Value!) {
                 Context = sourceEntry.Id,
+                ExtractedComments = sourceEntry.Comment ?? "",
             };
             po.Add(poEntry);
         }
