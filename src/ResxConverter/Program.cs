@@ -3,6 +3,10 @@ using Spectre.Console.Cli;
 
 var app = new CommandApp();
 app.Configure(config => {
+  #if DEBUG
+    config.PropagateExceptions();
+  #endif
+
     config.AddCommand<Resx2PoCommand>("resx2po");
     config.AddCommand<Resx2PotCommand>("resx2pot");
 });

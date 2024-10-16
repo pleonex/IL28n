@@ -131,7 +131,14 @@ internal class Resx2PoCommand : AsyncCommand<Resx2PoCommand.Settings>
             }
 
             readComponents.Add(fullComponentName);
-            yield return MatchFile(rootPath, inputFile, resxLanguage);
+
+            var component = MatchFile(rootPath, inputFile, resxLanguage);
+            if (!File.Exists(component.LocalizedResxPath)) {
+                AnsiConsole.MarkupLineInterpolated($"[red]Missing translation file[/] for {inputFile}");
+                continue;
+            }
+
+            yield return component;
         }
     }
 

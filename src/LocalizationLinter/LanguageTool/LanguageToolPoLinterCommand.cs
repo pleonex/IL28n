@@ -121,7 +121,7 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
 
             var tree = new Tree("");
             foreach (var match in results.Item2) {
-                string bad = match.Sentence!.Substring(match.Offset!.Value, match.Length!.Value);
+                string bad = match.Context!.Text!.Substring(match.Context!.Offset!.Value, match.Context!.Length!.Value);
                 string suggestions = string.Join(", ", match.Replacements!.Select(r => r.Value));
                 tree.AddNode($"[red]{match.Message}[/]: [red]{bad}[/] -> [blue]{suggestions}[/]");
                 issuesCount++;

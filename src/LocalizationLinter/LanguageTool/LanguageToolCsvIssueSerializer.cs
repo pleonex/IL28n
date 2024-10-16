@@ -67,7 +67,7 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
             ComponentName = componentName,
             Id = messageId,
             Translation = issue.Sentence!.ReplaceLineEndings(" "),
-            AffectedText = issue.Sentence!.Substring(issue.Offset!.Value, issue.Length!.Value).ReplaceLineEndings(" "),
+            AffectedText = issue.Context!.Text!.Substring(issue.Context!.Offset!.Value, issue.Context.Length!.Value).ReplaceLineEndings(" "),
             IssueMessage = issue.Message!,
             Suggestions = string.Join(", ", issue.Replacements!.Select(r => r.Value)),
         };
