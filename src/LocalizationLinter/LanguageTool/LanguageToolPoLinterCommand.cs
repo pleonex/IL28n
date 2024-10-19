@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using PleOps.LanguageTool.Client;
+using PleOps.LanguageTool.Client.TextCheck;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Yarhl.IO;
@@ -71,7 +72,10 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         AnsiConsole.MarkupLineInterpolated($"LanguageTool server: [blue]{settings.LanguageToolUrl}[/]");
-        var languageToolClient = LanguageToolClientFactory.Create(settings.LanguageToolUrl);
+        var clientOptions = new LanguageToolClientOptions { BaseAddress = settings.LanguageToolUrl };
+        clientOptions.RetryOptions.MaxRetry = 3;
+        clientOptions.RetryOptions.Delay = 1;
+        LanguageToolClient languageToolClient = LanguageToolClientFactory.Create(clientOptions);
 
         if (!string.IsNullOrWhiteSpace(settings.UserDictionaryPath)) {
             AnsiConsole.MarkupLineInterpolated($"Loading user dictionary: [blue]{settings.UserDictionaryPath}[/]");
@@ -116,14 +120,13 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         var progress = new Progress<PoEntry>(
             e => AnsiConsole.MarkupLineInterpolated($"[[{e.Context}]] '[italic]{e.Translated}[/]'"));
 
-        await foreach (var results in linter.LintAsync(po, progress)) {
-            reporter.ReportIssues(name, results.Item1.Context, results.Item2);
+        await foreach ((PoEntry entry, TextCheckResult checkResult) in linter.LintAsync(po, progress)) {
+            reporter.ReportIssues(name, entry.Context, checkResult);
 
             var tree = new Tree("");
-            foreach (var match in results.Item2) {
-                string bad = match.Context!.Text!.Substring(match.Context!.Offset!.Value, match.Context!.Length!.Value);
-                string suggestions = string.Join(", ", match.Replacements!.Select(r => r.Value));
-                tree.AddNode($"[red]{match.Message}[/]: [red]{bad}[/] -> [blue]{suggestions}[/]");
+            foreach (TextCheckMatch match in checkResult.Matches) {
+                string suggestions = string.Join(", ", match.Replacements);
+                _ = tree.AddNode($"[red]{match.Message}[/]: [red]{match.TextMatch}[/] -> [blue]{suggestions}[/]");
                 issuesCount++;
             }
 

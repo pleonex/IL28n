@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration.Attributes;
-using PleOps.LanguageTool.Client.Check;
+using PleOps.LanguageTool.Client.TextCheck;
 
 public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
 {
@@ -16,7 +16,7 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
     public LanguageToolCsvIssueSerializer(string filePath)
     {
         string dirPath = Path.GetDirectoryName(Path.GetFullPath(filePath))!;
-        Directory.CreateDirectory(dirPath);
+        _ = Directory.CreateDirectory(dirPath);
 
         var streamOptions = new FileStreamOptions {
             Mode = FileMode.Create,
@@ -28,9 +28,11 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
 
     public bool IsDisposed { get; private set; }
 
-    public void ReportIssues(string componentName, string messageId, ReadOnlyCollection<CheckPostResponse_matches> issues)
+    public void ReportIssues(string componentName, string messageId, TextCheckResult checkResult)
     {
-        var entries = issues.Select(i => MapToCsvEntry(componentName, messageId, i));
+        IEnumerable<CsvEntry> entries = checkResult
+            .Matches
+            .Select(i => MapToCsvEntry(componentName, messageId, i));
         writer.WriteRecords(entries);
         writer.Flush();
     }
@@ -45,6 +47,7 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
     {
         await outputStream.DisposeAsync();
         await writer.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)
@@ -61,15 +64,15 @@ public class LanguageToolCsvIssueSerializer : IDisposable, IAsyncDisposable
         IsDisposed = true;
     }
 
-    private static CsvEntry MapToCsvEntry(string componentName, string messageId, CheckPostResponse_matches issue)
+    private static CsvEntry MapToCsvEntry(string componentName, string messageId, TextCheckMatch issue)
     {
         return new CsvEntry {
             ComponentName = componentName,
             Id = messageId,
-            Translation = issue.Sentence!.ReplaceLineEndings(" "),
-            AffectedText = issue.Context!.Text!.Substring(issue.Context!.Offset!.Value, issue.Context.Length!.Value).ReplaceLineEndings(" "),
+            Translation = issue.Sentence,
+            AffectedText = issue.TextMatch,
             IssueMessage = issue.Message!,
-            Suggestions = string.Join(", ", issue.Replacements!.Select(r => r.Value)),
+            Suggestions = string.Join(", ", issue.Replacements),
         };
     }
 

@@ -1,8 +1,7 @@
 ﻿namespace PleOps.Il28n.LocalizationLinter.LanguageTool;
 
-using System.Collections.ObjectModel;
 using PleOps.LanguageTool.Client;
-using PleOps.LanguageTool.Client.Check;
+using PleOps.LanguageTool.Client.TextCheck;
 using Yarhl.Media.Text;
 
 public class LanguageToolPoLinter
@@ -15,7 +14,7 @@ public class LanguageToolPoLinter
         this.client = client;
     }
 
-    public async IAsyncEnumerable<(PoEntry, ReadOnlyCollection<CheckPostResponse_matches>)> LintAsync(
+    public async IAsyncEnumerable<(PoEntry, TextCheckResult)> LintAsync(
         Po po,
         IProgress<PoEntry> progress)
     {
@@ -27,7 +26,7 @@ public class LanguageToolPoLinter
                 continue;
             }
 
-            var results = await client.CheckTextAsync(entry.Translated, language, true);
+            TextCheckResult results = await client.CheckPlainTextAsync(entry.Translated, language, true);
             yield return (entry, results);
         }
     }
