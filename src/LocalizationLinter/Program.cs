@@ -7,6 +7,9 @@ app.Configure(config => {
     config.PropagateExceptions();
   #endif
 
-    config.AddCommand<LanguageToolPoLinterCommand>("po-langtool");
+    config.AddBranch("po", poConfig => {
+        poConfig.SetDescription("Quality assurance checks for PO files");
+        poConfig.AddCommand<LanguageToolPoLinterCommand>("langtool");
+    });
 });
 return await app.RunAsync(args);
