@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Internalization format for. NET software: .resx</Description>
+    <Description>Parsing and conversion library for .NET RESX format for localization messages</Description>
     <IsPackable>true</IsPackable>
 
     <TargetFramework>net8.0</TargetFramework>

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
     <RootNamespace>PleOps.Il28n.ResxConverter</RootNamespace>
 
     <TargetFramework>net8.0</TargetFramework>
@@ -12,6 +13,10 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)" Visible="False" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Spectre.Console" />

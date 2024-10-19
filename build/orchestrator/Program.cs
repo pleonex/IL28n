@@ -15,6 +15,8 @@ public sealed class BuildLifetime : FrostingLifetime<PleOpsBuildContext>
     {
         context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
             "./src/ResxConverter", [ "win-x64", "linux-x64", "osx-x64" ], "net8.0"));
+        context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
+            "./src/LocalizationLinter", [ "win-x64", "linux-x64", "osx-x64" ], "net8.0"));
 
         context.ReadArguments();
 
