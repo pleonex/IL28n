@@ -1,4 +1,4 @@
-using Cake.Core;
+﻿using Cake.Core;
 using Cake.Frosting;
 using Cake.Frosting.PleOps.Recipe;
 using Cake.Frosting.PleOps.Recipe.Dotnet;
@@ -13,6 +13,8 @@ public sealed class BuildLifetime : FrostingLifetime<PleOpsBuildContext>
 {
     public override void Setup(PleOpsBuildContext context, ISetupContext info)
     {
+        context.DotNetContext.CoverageTarget = 0; // no planned tests
+
         context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
             "./src/ResxConverter", [ "win-x64", "linux-x64", "osx-x64" ], "net8.0"));
         context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
