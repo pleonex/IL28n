@@ -6,6 +6,7 @@
     <IsPackable>true</IsPackable>
 
     <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PleOps.Il28n.Formats.Resx</RootNamespace>
 
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
