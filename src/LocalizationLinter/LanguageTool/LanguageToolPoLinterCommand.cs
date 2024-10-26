@@ -39,6 +39,14 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         [Description("Path to the file with words to ignore in checks")]
         public string? UserDictionaryPath { get; set; }
 
+        [CommandOption("--markup-regex")]
+        [Description("Regular expression to mark and exclude markup codes")]
+        public string? MarkupRegex { get; set; }
+
+        [CommandOption("--picky")]
+        [Description("Run the checks in picky mode")]
+        public bool Picky { get; set; }
+
         public override ValidationResult Validate()
         {
             if (string.IsNullOrWhiteSpace(InputFilePath) && string.IsNullOrWhiteSpace(InputDirectoryPath)) {
@@ -89,7 +97,7 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
 
         int issuesCount = 0;
         if (!string.IsNullOrWhiteSpace(settings.InputFilePath)) {
-            issuesCount = await LintPo(linter, reporter, settings.InputFilePath);
+            issuesCount = await LintPo(linter, settings.Picky, settings.MarkupRegex, reporter, settings.InputFilePath);
         } else if (!string.IsNullOrWhiteSpace(settings.InputDirectoryPath)) {
             IEnumerable<string> inputFiles = Directory.EnumerateFiles(
                 settings.InputDirectoryPath,
@@ -97,7 +105,7 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
                 settings.RecursiveDirectorySearch ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
             foreach (string inputFile in inputFiles) {
-                issuesCount += await LintPo(linter, reporter, inputFile);
+                issuesCount += await LintPo(linter, settings.Picky, settings.MarkupRegex, reporter, inputFile);
             }
         }
 
@@ -105,7 +113,12 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         return 0;
     }
 
-    private static async Task<int> LintPo(LanguageToolPoLinter linter, LanguageToolCsvIssueSerializer reporter, string poPath)
+    private static async Task<int> LintPo(
+        LanguageToolPoLinter linter,
+        bool picky,
+        string? markupRegex,
+        LanguageToolCsvIssueSerializer reporter,
+        string poPath)
     {
         string name = Path.GetFileNameWithoutExtension(poPath);
 
@@ -120,7 +133,7 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         var progress = new Progress<PoEntry>(
             e => AnsiConsole.MarkupLineInterpolated($"[[{e.Context}]] '[italic]{e.Translated}[/]'"));
 
-        await foreach ((PoEntry entry, TextCheckResult checkResult) in linter.LintAsync(po, progress)) {
+        await foreach ((PoEntry entry, TextCheckResult checkResult) in linter.LintAsync(po, picky, markupRegex, progress)) {
             reporter.ReportIssues(name, entry.Context, checkResult);
 
             var tree = new Tree("");
