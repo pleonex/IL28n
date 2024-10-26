@@ -43,6 +43,10 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         [Description("Regular expression to mark and exclude markup codes")]
         public string? MarkupRegex { get; set; }
 
+        [CommandOption("--markup-mapping")]
+        [Description("File with markup mappings")]
+        public string? MarkupMappingPath { get; set; }
+
         [CommandOption("--picky")]
         [Description("Run the checks in picky mode")]
         public bool Picky { get; set; }
@@ -97,7 +101,7 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
 
         int issuesCount = 0;
         if (!string.IsNullOrWhiteSpace(settings.InputFilePath)) {
-            issuesCount = await LintPo(linter, settings.Picky, settings.MarkupRegex, reporter, settings.InputFilePath);
+            issuesCount = await LintPo(settings, linter, reporter, settings.InputFilePath);
         } else if (!string.IsNullOrWhiteSpace(settings.InputDirectoryPath)) {
             IEnumerable<string> inputFiles = Directory.EnumerateFiles(
                 settings.InputDirectoryPath,
@@ -105,7 +109,7 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
                 settings.RecursiveDirectorySearch ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
             foreach (string inputFile in inputFiles) {
-                issuesCount += await LintPo(linter, settings.Picky, settings.MarkupRegex, reporter, inputFile);
+                issuesCount += await LintPo(settings, linter, reporter, inputFile);
             }
         }
 
@@ -114,9 +118,8 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
     }
 
     private static async Task<int> LintPo(
+        Settings settings,
         LanguageToolPoLinter linter,
-        bool picky,
-        string? markupRegex,
         LanguageToolCsvIssueSerializer reporter,
         string poPath)
     {
@@ -133,7 +136,8 @@ internal class LanguageToolPoLinterCommand : AsyncCommand<LanguageToolPoLinterCo
         var progress = new Progress<PoEntry>(
             e => AnsiConsole.MarkupLineInterpolated($"[[{e.Context}]] '[italic]{e.Translated}[/]'"));
 
-        await foreach ((PoEntry entry, TextCheckResult checkResult) in linter.LintAsync(po, picky, markupRegex, progress)) {
+        var results = linter.LintAsync(po, settings.Picky, settings.MarkupRegex, settings.MarkupMappingPath, progress);
+        await foreach ((PoEntry entry, TextCheckResult checkResult) in results) {
             reporter.ReportIssues(name, entry.Context, checkResult);
 
             var tree = new Tree("");

@@ -19,6 +19,7 @@ public class LanguageToolPoLinter
         Po po,
         bool picky,
         string? markupRegexText,
+        string? markupMappingPath,
         IProgress<PoEntry> progress)
     {
         var checkParameters = new TextCheckParameters {
@@ -26,9 +27,7 @@ public class LanguageToolPoLinter
             Picky = picky,
         };
 
-        RegexMarkupBuilder? regexBuilder = string.IsNullOrEmpty(markupRegexText)
-            ? null
-            : new RegexMarkupBuilder(new Regex(markupRegexText));
+        RegexMarkupBuilder? regexBuilder = CreateMarkupBuilder(markupRegexText, markupMappingPath);
 
         foreach (PoEntry entry in po.Entries) {
             progress.Report(entry);
@@ -48,5 +47,23 @@ public class LanguageToolPoLinter
 
             yield return (entry, results);
         }
+    }
+
+    private static RegexMarkupBuilder? CreateMarkupBuilder(string? markupRegexText, string? markupMappingPath)
+    {
+        if (string.IsNullOrEmpty(markupRegexText)) {
+            return null;
+        }
+
+        Dictionary<Regex, string> mapping = [];
+        if (!string.IsNullOrEmpty(markupMappingPath)) {
+            mapping = File.ReadAllLines(markupMappingPath)
+                .Select(l => l.Trim().Split(['='], 2))
+                .Where(l => l.Length == 2 && !l[0].StartsWith('#'))
+                .ToDictionary(l => new Regex(l[0]), l => l[1]);
+        }
+
+        var regex = new Regex(markupRegexText);
+        return new RegexMarkupBuilder(regex, mapping);
     }
 }
