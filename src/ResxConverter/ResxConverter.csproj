@@ -1,11 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyName></AssemblyName>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
     <RootNamespace>PleOps.Il28n.ResxConverter</RootNamespace>
 
     <TargetFramework>net8.0</TargetFramework>
+
+    <!-- Keey the name of the exe simple while having a full NuGet package name -->
+    <PackageId>PleOps.Il28n.ResxConverter</PackageId>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>resxconverter</ToolCommandName>
 

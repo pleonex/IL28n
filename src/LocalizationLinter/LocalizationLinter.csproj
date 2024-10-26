@@ -6,6 +6,9 @@
     <RootNamespace>PleOps.Il28n.LocalizationLinter</RootNamespace>
 
     <TargetFramework>net8.0</TargetFramework>
+
+    <!-- Keey the name of the exe simple while having a full NuGet package name -->
+    <PackageId>PleOps.Il28n.LocalizationLinter</PackageId>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>loclinter</ToolCommandName>
 

@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyName>PleOps.Il28n.Formats.Resx</AssemblyName>
     <Description>Parsing and conversion library for .NET RESX format for localization messages</Description>
     <IsPackable>true</IsPackable>
 
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>PleOps.Il28n.Formats.Resx</RootNamespace>
 
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
