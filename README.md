@@ -16,8 +16,24 @@ Internalization (i18n) and localization (l10n) framework and tools for software
 made with .NET (languages based on IL).
 
 > [!WARNING]  
-> This project is a very early development phase. It may never be finished. No
-> support guaranteed. Feel free to fork and adapt to your use case.
+> This is a personal project with **no support**. The project may not have an
+> active development. Don't expect new features, fixes (including security
+> fixes). I don't recommend using it for production environments. Feel free to
+> fork and adapt. _Small_ contributions are welcome.
+
+## Libraries
+
+TODO: install, main APIs
+
+## Tools
+
+### RESX Converter
+
+TODO: install, commands usage, example
+
+### Localization linter
+
+TODO: install, commands usage, example
 
 ## Build
 

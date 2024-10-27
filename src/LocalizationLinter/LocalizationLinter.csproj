@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" />
+    <PackageReference Include="PleOps.LanguageTool.Client" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="Spectre.Console.Analyzer">
       <PrivateAssets>all</PrivateAssets>
@@ -31,10 +32,6 @@
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="Yarhl" />
     <PackageReference Include="Yarhl.Media.Text" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\LanguageTool.Client\LanguageTool.Client.csproj" />
   </ItemGroup>
 
 </Project>
